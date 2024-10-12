@@ -1,7 +1,7 @@
 
 # Quick Start Scripts
 
-This repository contains a collection of scripts that can be quickly executed in any new environment or device. These scripts are designed to be run directly from the command line using curl and bash, allowing for easy setup and configuration without the need to clone the entire repository.
+This repository serves as a general storage for various scripts that can be executed directly in a terminal.
 
 ## Usage
 
