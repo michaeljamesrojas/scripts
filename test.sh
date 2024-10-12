@@ -7,6 +7,6 @@
 
 
 # read -p "Install Neovim first? (y/n): "
-echo "Enter your name: "
+echo "Enter your name: " name
 read -p name
 echo  "Hello, $name!"
