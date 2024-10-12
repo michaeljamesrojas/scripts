@@ -5,4 +5,7 @@
 # fi
 
 
-read -p "Install Neovim first? (y/n): "
+# read -p "Install Neovim first? (y/n): "
+echo "Enter your name: "
+read name
+echo  "Hello, $name!"
