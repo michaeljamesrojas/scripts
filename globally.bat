@@ -1,4 +1,3 @@
-@echo off
 setlocal enabledelayedexpansion
 
 :: Define the base URL for raw content
