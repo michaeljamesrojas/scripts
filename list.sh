@@ -31,8 +31,8 @@ fi
 selected_script="${scripts[$((choice-1))]}"
 script_url="$base_url/$selected_script"
 echo "Fetching and executing script: $selected_script"
-curl -s "$script_url" | bash -s
-# bash <(curl -s "$script_url")
+# curl -s "$script_url" | bash -s
+bash <(curl -s "$script_url")
 
 # Check if curl encountered an error
 if [[ $? -ne 0 ]]; then
