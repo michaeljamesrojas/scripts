@@ -1,3 +1,4 @@
+#!/bin/bash
 # read -p "Install Neovim first? (y/n): " answer
 
 # if [ "$answer" = "y" ]; then
