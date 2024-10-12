@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Define the GitHub API URL for the repository contents
-repo_api_url="https://api.github.com/repos/michaeljamesrojas/scripts/contents"
+# Define the base URL for raw content
+base_url="https://raw.githubusercontent.com/michaeljamesrojas/scripts/main"
 
-# Fetch the list of files and filter for script files
+# Fetch the list of files from the repository
 echo "Available scripts:"
-scripts=($(curl -s "$repo_api_url" | grep '"name":' | grep '\.sh"' | awk -F'"' '{print $4}'))
+scripts=($(curl -s "https://api.github.com/repos/michaeljamesrojas/scripts/contents" | grep '"name":' | grep '\.sh"' | awk -F'"' '{print $4}'))
 
 # Check if curl encountered an error
 if [[ $? -ne 0 ]]; then
@@ -27,6 +27,14 @@ if [[ ! "$choice" =~ ^[0-9]+$ ]] || [ "$choice" -lt 1 ] || [ "$choice" -gt "${#s
     exit 1
 fi
 
-# Execute the chosen script using globally.sh
+# Execute the chosen script directly from the raw URL
 selected_script="${scripts[$((choice-1))]}"
-./globally.sh "$selected_script"
+script_url="$base_url/$selected_script"
+echo "Fetching and executing script: $selected_script"
+curl -s "$script_url" | bash -s
+
+# Check if curl encountered an error
+if [[ $? -ne 0 ]]; then
+    echo "Error: Failed to fetch or execute the script."
+    exit 1
+fi
