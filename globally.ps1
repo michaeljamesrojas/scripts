@@ -5,24 +5,32 @@ $baseUrl = "https://raw.githubusercontent.com/michaeljamesrojas/scripts/main"
 Write-Host "Available scripts:"
 Write-Host
 
-# Fetch and parse the JSON
-$scripts = (Invoke-RestMethod 'https://api.github.com/repos/michaeljamesrojas/scripts/contents' | Where-Object {$_.name -like '*.sh'}).name
+$repoContents = Invoke-RestMethod -Uri "https://api.github.com/repos/michaeljamesrojas/scripts/contents"
+$scripts = $repoContents | Where-Object { $_.name -like "*.ps1" } | Select-Object -ExpandProperty name
 
-# Display numbered list of scripts
-$scripts | ForEach-Object -Begin {$i=1} -Process {Write-Host ("{0}. {1}" -f $i++, $_)}
+# Display numbered list of scripts with spacing
+for ($i = 0; $i -lt $scripts.Count; $i++) {
+    Write-Host ("{0}. {1}" -f ($i+1), $scripts[$i])
+}
 
 # Prompt user to choose a script
-do {
-    $choice = Read-Host "Enter the number of the script you want to execute"
-} while (-not ($choice -match '^\d+$' -and [int]$choice -ge 1 -and [int]$choice -le $scripts.Count))
+$choice = Read-Host "Enter the number of the script you want to execute"
+
+# Validate user input
+if (-not ($choice -match '^\d+$') -or [int]$choice -lt 1 -or [int]$choice -gt $scripts.Count) {
+    Write-Host "Invalid choice. Please enter a number between 1 and $($scripts.Count)."
+    exit
+}
 
 # Get the selected script name
 $selectedScript = $scripts[[int]$choice - 1]
 
 # Ask for confirmation
+Write-Host
 $confirm = Read-Host "Do you really want to execute $selectedScript? (y/n)"
+Write-Host
 
-if ($confirm -ne "y") {
+if ($confirm -notmatch '^[Yy]$') {
     Write-Host "Execution cancelled."
     exit
 }
@@ -33,9 +41,10 @@ Write-Host "Fetching and executing script: $selectedScript"
 Write-Host
 
 try {
-    Invoke-Expression (Invoke-WebRequest -Uri $scriptUrl -UseBasicParsing).Content
+    $scriptContent = Invoke-RestMethod -Uri $scriptUrl
+    Invoke-Expression $scriptContent
 }
 catch {
     Write-Host "Error: Failed to fetch or execute the script."
-    exit 1
+    exit
 }
