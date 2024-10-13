@@ -32,7 +32,7 @@ fi
 selected_script="${scripts[$((choice-1))]}"
 
 # Display the contents of the chosen script
-script_url="$base_url/$selected_script"
+script_url="$base_url/$selected_script?token=$(date +%s)"
 echo "Displaying contents of script: $selected_script"
 echo
 echo "----------------------------------------"

@@ -42,7 +42,9 @@ if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
 fi
 
 # Execute the chosen script directly from the raw URL
-script_url="$base_url/$selected_script"
+# script_url="$base_url/$selected_script"
+script_url="$base_url/$selected_script?token=$(date +%s)"
+
 echo "Fetching and executing script: $selected_script"
 echo
 bash <(curl -s "$script_url") "${@:1}"
