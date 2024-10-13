@@ -67,7 +67,10 @@ echo "Fetching and executing script: $selected_script"
 echo "via:(with arguments passed)"
 echo "bash <(curl -s $script_url) ${@:1}"
 echo
+echo "============================================"
 bash <(curl -s "$script_url") "${@:1}"
+echo "============================================"
+
 # Check if curl encountered an error
 if [[ $? -ne 0 ]]; then
     echo "Error: Failed to fetch or execute the script."
