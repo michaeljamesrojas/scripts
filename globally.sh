@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Define the base URL for raw content.
+# Define the base URL for raw content
 base_url="https://raw.githubusercontent.com/michaeljamesrojas/scripts/main"
 
 # Fetch the list of files from the repository
@@ -13,12 +13,30 @@ if [[ $? -ne 0 ]]; then
     echo "Error: Failed to fetch the list of scripts."
     exit 1
 fi
-
-# Display numbered list of scripts with spacing
-for i in "${!scripts[@]}"; do
-    echo "$((i+1)). ${scripts[i]}"
+# Display numbered list of scripts in columns
+cols=$(tput cols)
+max_width=0
+for script in "${scripts[@]}"; do
+    [[ ${#script} -gt $max_width ]] && max_width=${#script}
 done
+max_width=$((max_width + 5))  # Add some padding
 
+num_cols=$((cols / max_width))
+[[ $num_cols -gt 3 ]] && num_cols=3
+[[ $num_cols -lt 1 ]] && num_cols=1
+
+num_rows=$(( (${#scripts[@]} + num_cols - 1) / num_cols ))
+
+for row in $(seq 0 $((num_rows - 1))); do
+    for col in $(seq 0 $((num_cols - 1))); do
+        index=$((row + col * num_rows))
+        if [ $index -lt ${#scripts[@]} ]; then
+            printf "%-${max_width}s" "$((index+1)). ${scripts[index]}"
+        fi
+    done
+    echo
+done
+echo
 # Prompt user to choose a script
 read -p "Enter the number of the script you want to execute: " choice
 
@@ -46,8 +64,6 @@ fi
 script_url="$base_url/$selected_script?token=$(date +%s)"
 
 echo "Fetching and executing script: $selected_script"
-echo "via:(with arguments passed)"
-echo "bash <(curl -s $script_url)"
 echo
 bash <(curl -s "$script_url") "${@:1}"
 # Check if curl encountered an error
