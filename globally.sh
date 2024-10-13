@@ -45,8 +45,7 @@ fi
 script_url="$base_url/$selected_script"
 echo "Fetching and executing script: $selected_script"
 echo
-bash <(curl -s "$script_url")
-
+bash <(curl -s "$script_url") "${@:2}"
 # Check if curl encountered an error
 if [[ $? -ne 0 ]]; then
     echo "Error: Failed to fetch or execute the script."
