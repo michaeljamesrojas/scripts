@@ -21,27 +21,22 @@ for script in "${scripts[@]}"; do
 done
 max_width=$((max_width + 5))  # Add some padding
 
-if [ ${#scripts[@]} -le 10 ]; then
-    # Single column for 10 or fewer items
-    for i in "${!scripts[@]}"; do
-        echo "$((i+1)). ${scripts[i]}"
-    done
-else
-    # Multi-column layout for more than 10 items
-    num_cols=$((cols / max_width))
-    [[ $num_cols -gt 3 ]] && num_cols=3
-    [[ $num_cols -lt 1 ]] && num_cols=1
+num_cols=$((cols / max_width))
+[[ $num_cols -gt 3 ]] && num_cols=3
+[[ $num_cols -lt 1 ]] && num_cols=1
 
-    for i in "${!scripts[@]}"; do
-        printf "%-${max_width}s" "$((i+1)). ${scripts[i]}"
-        if (( (i+1) % num_cols == 0 )); then
-            echo
+num_rows=$(( (${#scripts[@]} + num_cols - 1) / num_cols ))
+
+for row in $(seq 0 $((num_rows - 1))); do
+    for col in $(seq 0 $((num_cols - 1))); do
+        index=$((row + col * num_rows))
+        if [ $index -lt ${#scripts[@]} ]; then
+            printf "%-${max_width}s" "$((index+1)). ${scripts[index]}"
         fi
     done
-    [[ $((${#scripts[@]} % num_cols)) -ne 0 ]] && echo
-fi
+    echo
+done
 echo
-
 # Prompt user to choose a script
 read -p "Enter the number of the script you want to execute: " choice
 
