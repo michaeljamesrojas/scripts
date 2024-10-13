@@ -14,10 +14,25 @@ if [[ $? -ne 0 ]]; then
     exit 1
 fi
 
-# Display numbered list of scripts with spacing
-for i in "${!scripts[@]}"; do
-    echo "$((i+1)). ${scripts[i]}"
+# Display numbered list of scripts in columns
+cols=$(tput cols)
+max_width=0
+for script in "${scripts[@]}"; do
+    [[ ${#script} -gt $max_width ]] && max_width=${#script}
 done
+max_width=$((max_width + 5))  # Add some padding
+num_cols=$((cols / max_width))
+[[ $num_cols -lt 1 ]] && num_cols=1
+
+for i in "${!scripts[@]}"; do
+    printf "%-${max_width}s" "$((i+1)). ${scripts[i]}"
+    if (( (i+1) % num_cols == 0 )); then
+        echo
+    fi
+done
+[[ $((${#scripts[@]} % num_cols)) -ne 0 ]] && echo
+echo
+
 
 # Prompt user to choose a script
 read -p "Enter the number of the script you want to execute: " choice
@@ -31,36 +46,23 @@ fi
 # Get the selected script name
 selected_script="${scripts[$((choice-1))]}"
 
-# Ask for confirmation and action
+# Ask for confirmation
 echo
-read -p "Choose action: (e)xecute, (d)isplay, or (b)oth: " action
+read -p "Do you really want to execute $selected_script? (y/n): " confirm
 echo
 
-case "$action" in
-    [eE])
-        # Execute the script
-        echo "Executing script: $selected_script"
-        bash <(curl -s "$script_url") "${@:1}"
-        ;;
-    [dD])
-        # Display the script content
-        echo "Displaying content of $selected_script:"
-        curl -s "$script_url"
-        ;;
-    [bB])
-        # Display and then execute
-        echo "Displaying content of $selected_script:"
-        curl -s "$script_url"
-        echo
-        echo "Executing script: $selected_script"
-        bash <(curl -s "$script_url") "${@:1}"
-        ;;
-    *)
-        echo "Invalid choice. Exiting."
-        exit 1
-        ;;
-esac
+if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
+    echo "Execution cancelled."
+    exit 0
+fi
 
+# Execute the chosen script directly from the raw URL
+# script_url="$base_url/$selected_script"
+script_url="$base_url/$selected_script?token=$(date +%s)"
+
+echo "Fetching and executing script: $selected_script"
+echo
+bash <(curl -s "$script_url") "${@:1}"
 # Check if curl encountered an error
 if [[ $? -ne 0 ]]; then
     echo "Error: Failed to fetch or execute the script."
