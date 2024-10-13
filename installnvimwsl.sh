@@ -10,6 +10,6 @@ fi
 
 sudo apt install make gcc ripgrep unzip git xclip
 
-git clone https://github.com/nvim-lua/kickstart.nvim.git "${XDG_CONFIG_HOME:-$HOME/.config}"/nvim
+git clone https://github.com/michaeljamesrojas/kickstart.nvim.git "${XDG_CONFIG_HOME:-$HOME/.config}"/nvim
 
 echo "Done, please run nvim, restart terminal if needed"
