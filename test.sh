@@ -3,12 +3,5 @@
 # @echo off
 # start chrome --profile-directory="Person 1" %*
 
-# Get the name from the first argument
-name=$1
-
-# Check if a name was provided
-if [ -z "$name" ]; then
-    echo "Please provide a name as an argument."
-else
-    echo "Hello, $name! Welcome to the script."
-fi
+# Start Chrome with the "Person 1" profile and pass all arguments
+google-chrome --profile-directory="Person 1" "$@"
