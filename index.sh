@@ -2,7 +2,8 @@
 
 # Define the alias name and the URL of the globally.sh script
 ALIAS_NAME="ggg"
-SCRIPT_URL="https://raw.githubusercontent.com/michaeljamesrojas/scripts/main/globally.sh?token=$(date +%s)"
+# SCRIPT_URL="https://raw.githubusercontent.com/michaeljamesrojas/scripts/main/globally.sh?token=$(date +%s)"
+SCRIPT_URL="https://raw.githubusercontent.com/michaeljamesrojas/scripts/main/globally.sh"
 
 # Add the alias to the user's shell configuration file
 add_alias() {
