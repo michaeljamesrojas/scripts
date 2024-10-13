@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Define the base URL for raw content
+# Define the base URL for raw content.
 base_url="https://raw.githubusercontent.com/michaeljamesrojas/scripts/main"
 
 # Fetch the list of files from the repository
