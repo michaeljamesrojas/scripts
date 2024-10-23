@@ -96,3 +96,27 @@ if [[ $? -ne 0 ]]; then
     echo "Error: Failed to fetch or execute the script."
     exit 1
 fi
+
+# Add this check right after the filtering logic and before the display section
+if [ ${#scripts[@]} -eq 1 ]; then
+    selected_script="${scripts[0]}"
+    echo "Found one matching script: $selected_script"
+    echo
+    read -p "Do you want to execute $selected_script? (y/n): " confirm
+    echo
+
+    if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
+        echo "Execution cancelled."
+        exit 0
+    fi
+
+    script_url="$base_url/$selected_script?token=$(date +%s)"
+    echo "Fetching and executing script: $selected_script"
+    echo "via:(with arguments passed)"
+    echo "bash <(curl -s $script_url) ${@:1}"
+    echo
+    echo "============================================"
+    bash <(curl -s "$script_url") "${@:1}"
+    echo "============================================"
+    exit $?
+fi
