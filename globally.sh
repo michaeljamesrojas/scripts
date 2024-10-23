@@ -6,13 +6,27 @@ base_url="https://raw.githubusercontent.com/michaeljamesrojas/scripts/main"
 # Fetch the list of files from the repository
 echo "Available scripts:"
 echo
-scripts=($(curl -s "https://api.github.com/repos/michaeljamesrojas/scripts/contents" | grep '"name":' | grep '\.sh"' | awk -F'"' '{print $4}'))
+all_scripts=($(curl -s "https://api.github.com/repos/michaeljamesrojas/scripts/contents" | grep '"name":' | grep '\.sh"' | awk -F'"' '{print $4}'))
 
 # Check if curl encountered an error
 if [[ $? -ne 0 ]]; then
     echo "Error: Failed to fetch the list of scripts."
     exit 1
 fi
+
+# Filter scripts if first argument is provided
+if [ -n "$1" ]; then
+    scripts=()
+    for script in "${all_scripts[@]}"; do
+        if [[ $script == *"$1"* ]]; then
+            scripts+=("$script")
+        fi
+    done
+    shift # Remove the first argument
+else
+    scripts=("${all_scripts[@]}")
+fi
+
 # Display numbered list of scripts in columns
 cols=$(tput cols)
 max_width=0
@@ -37,6 +51,13 @@ for row in $(seq 0 $((num_rows - 1))); do
     echo
 done
 echo
+
+# Check if any scripts were found after filtering
+if [ ${#scripts[@]} -eq 0 ]; then
+    echo "No scripts found matching the filter."
+    exit 1
+fi
+
 # Prompt user to choose a script
 read -p "Enter the number of the script you want to execute: " choice
 
@@ -60,7 +81,6 @@ if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
 fi
 
 # Execute the chosen script directly from the raw URL
-# script_url="$base_url/$selected_script"
 script_url="$base_url/$selected_script?token=$(date +%s)"
 
 echo "Fetching and executing script: $selected_script"
