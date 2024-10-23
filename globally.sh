@@ -51,12 +51,37 @@ for row in $(seq 0 $((num_rows - 1))); do
     echo
 done
 echo
-
 # Check if any scripts were found after filtering
 if [ ${#scripts[@]} -eq 0 ]; then
     echo "No scripts found matching the filter."
     exit 1
 fi
+
+# After filtering scripts, add this section:
+if [ ${#scripts[@]} -eq 1 ]; then
+    selected_script="${scripts[0]}"
+    echo "Found single matching script: $selected_script"
+    echo
+    read -p "Do you really want to execute $selected_script? (y/n): " confirm
+    echo
+
+    if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
+        echo "Execution cancelled."
+        exit 0
+    fi
+
+    script_url="$base_url/$selected_script?token=$(date +%s)"
+    echo "Fetching and executing script: $selected_script"
+    echo "via:(with arguments passed)"
+    echo "bash <(curl -s $script_url) ${@:1}"
+    echo
+    echo "============================================"
+    bash <(curl -s "$script_url") "${@:1}"
+    echo "============================================"
+    exit $?
+fi
+
+# Continue with existing script for multiple matches...
 
 # Prompt user to choose a script
 read -p "Enter the number of the script you want to execute: " choice
