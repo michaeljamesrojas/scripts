@@ -51,50 +51,28 @@ for row in $(seq 0 $((num_rows - 1))); do
     echo
 done
 echo
+
 # Check if any scripts were found after filtering
 if [ ${#scripts[@]} -eq 0 ]; then
     echo "No scripts found matching the filter."
     exit 1
 fi
-
-# After filtering scripts, add this section:
+# If only one script matches, skip the selection prompt
 if [ ${#scripts[@]} -eq 1 ]; then
     selected_script="${scripts[0]}"
-    echo "Found single matching script: $selected_script"
-    echo
-    read -p "Do you really want to execute $selected_script? (y/n): " confirm
-    echo
+else
+    # Prompt user to choose a script
+    read -p "Enter the number of the script you want to execute: " choice
 
-    if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
-        echo "Execution cancelled."
-        exit 0
+    # Validate user input
+    if [[ ! "$choice" =~ ^[0-9]+$ ]] || [ "$choice" -lt 1 ] || [ "$choice" -gt "${#scripts[@]}" ]; then
+        echo "Invalid choice. Please enter a number between 1 and ${#scripts[@]}."
+        exit 1
     fi
-
-    script_url="$base_url/$selected_script?token=$(date +%s)"
-    echo "Fetching and executing script: $selected_script"
-    echo "via:(with arguments passed)"
-    echo "bash <(curl -s $script_url) ${@:1}"
-    echo
-    echo "============================================"
-    bash <(curl -s "$script_url") "${@:1}"
-    echo "============================================"
-    exit $?
+    
+    # Get the selected script name
+    selected_script="${scripts[$((choice-1))]}"
 fi
-
-# Continue with existing script for multiple matches...
-
-# Prompt user to choose a script
-read -p "Enter the number of the script you want to execute: " choice
-
-# Validate user input
-if [[ ! "$choice" =~ ^[0-9]+$ ]] || [ "$choice" -lt 1 ] || [ "$choice" -gt "${#scripts[@]}" ]; then
-    echo "Invalid choice. Please enter a number between 1 and ${#scripts[@]}."
-    exit 1
-fi
-
-# Get the selected script name
-selected_script="${scripts[$((choice-1))]}"
-
 # Ask for confirmation
 echo
 read -p "Do you really want to execute $selected_script? (y/n): " confirm
