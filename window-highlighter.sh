@@ -16,6 +16,9 @@ Add-Type @"
         [DllImport("user32.dll")]
         public static extern int GetWindowText(IntPtr hWnd, System.Text.StringBuilder text, int count);
 
+        [DllImport("user32.dll")]
+        public static extern short GetAsyncKeyState(int vKey);
+
         [StructLayout(LayoutKind.Sequential)]
         public struct RECT {
             public int Left;
@@ -37,24 +40,33 @@ $highlightForm.TopMost = $true
 
 $lastWindow = [IntPtr]::Zero
 $rect = New-Object WindowHighlighter+RECT
+$altTabbing = $false
 
 while ($true) {
     $currentWindow = [WindowHighlighter]::GetForegroundWindow()
+    $altKey = [WindowHighlighter]::GetAsyncKeyState(0x12) -band 0x8000
+    $tabKey = [WindowHighlighter]::GetAsyncKeyState(0x09) -band 0x8000
     
-    if ($currentWindow -ne $lastWindow) {
-        [WindowHighlighter]::GetWindowRect($currentWindow, [ref]$rect)
-        
-        $highlightForm.Location = New-Object System.Drawing.Point($rect.Left, $rect.Top)
-        $highlightForm.Size = New-Object System.Drawing.Size(
-            ($rect.Right - $rect.Left),
-            ($rect.Bottom - $rect.Top)
-        )
-        
-        $highlightForm.Show()
-        Start-Sleep -Milliseconds 200
-        $highlightForm.Hide()
-        
-        $lastWindow = $currentWindow
+    if ($altKey -and $tabKey) {
+        $altTabbing = $true
+    }
+    elseif (-not $altKey -and $altTabbing) {
+        $altTabbing = $false
+        if ($currentWindow -ne $lastWindow) {
+            [WindowHighlighter]::GetWindowRect($currentWindow, [ref]$rect)
+            
+            $highlightForm.Location = New-Object System.Drawing.Point($rect.Left, $rect.Top)
+            $highlightForm.Size = New-Object System.Drawing.Size(
+                ($rect.Right - $rect.Left),
+                ($rect.Bottom - $rect.Top)
+            )
+            
+            $highlightForm.Show()
+            Start-Sleep -Milliseconds 200
+            $highlightForm.Hide()
+            
+            $lastWindow = $currentWindow
+        }
     }
     
     Start-Sleep -Milliseconds 50
