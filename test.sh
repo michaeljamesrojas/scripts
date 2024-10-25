@@ -5,7 +5,6 @@ cat > window_monitor.ps1 << 'EOL'
 Add-Type @"
     using System;
     using System.Runtime.InteropServices;
-    using System.Windows.Forms;
 
     public class WindowHighlighter {
         [DllImport("user32.dll")]
@@ -18,7 +17,7 @@ Add-Type @"
         public static extern int GetWindowText(IntPtr hWnd, System.Text.StringBuilder text, int count);
 
         [DllImport("user32.dll")]
-        public static extern short GetAsyncKeyState(Keys vKey);
+        public static extern short GetAsyncKeyState(int vKey);
 
         [StructLayout(LayoutKind.Sequential)]
         public struct RECT {
@@ -41,45 +40,33 @@ $highlightForm.TopMost = $true
 
 $lastWindow = [IntPtr]::Zero
 $rect = New-Object WindowHighlighter+RECT
-$altPressed = $false
-$tabPressed = $false
-$shouldHighlight = $false
+$altTabbing = $false
 
 while ($true) {
     $currentWindow = [WindowHighlighter]::GetForegroundWindow()
+    $altKey = [WindowHighlighter]::GetAsyncKeyState(0x12) -band 0x8000
+    $tabKey = [WindowHighlighter]::GetAsyncKeyState(0x09) -band 0x8000
     
-    # Check if Alt key is pressed
-    $altState = [WindowHighlighter]::GetAsyncKeyState([System.Windows.Forms.Keys]::Alt) -band 0x8000
-    
-    # Check if Tab key is pressed
-    $tabState = [WindowHighlighter]::GetAsyncKeyState([System.Windows.Forms.Keys]::Tab) -band 0x8000
-    
-    # Detect Alt+Tab sequence
-    if ($altState -and $tabState) {
-        $shouldHighlight = $true
+    if ($altKey -and $tabKey) {
+        $altTabbing = $true
     }
-    
-    # If window changed and we should highlight (after Alt+Tab)
-    if (($currentWindow -ne $lastWindow) -and $shouldHighlight) {
-        [WindowHighlighter]::GetWindowRect($currentWindow, [ref]$rect)
-        
-        $highlightForm.Location = New-Object System.Drawing.Point($rect.Left, $rect.Top)
-        $highlightForm.Size = New-Object System.Drawing.Size(
-            ($rect.Right - $rect.Left),
-            ($rect.Bottom - $rect.Top)
-        )
-        
-        $highlightForm.Show()
-        Start-Sleep -Milliseconds 200
-        $highlightForm.Hide()
-        
-        $shouldHighlight = $false
-        $lastWindow = $currentWindow
-    }
-    
-    # Reset highlight flag if Alt is released
-    if (-not $altState) {
-        $shouldHighlight = $false
+    elseif (-not $altKey -and $altTabbing) {
+        $altTabbing = $false
+        if ($currentWindow -ne $lastWindow) {
+            [WindowHighlighter]::GetWindowRect($currentWindow, [ref]$rect)
+            
+            $highlightForm.Location = New-Object System.Drawing.Point($rect.Left, $rect.Top)
+            $highlightForm.Size = New-Object System.Drawing.Size(
+                ($rect.Right - $rect.Left),
+                ($rect.Bottom - $rect.Top)
+            )
+            
+            $highlightForm.Show()
+            Start-Sleep -Milliseconds 200
+            $highlightForm.Hide()
+            
+            $lastWindow = $currentWindow
+        }
     }
     
     Start-Sleep -Milliseconds 50
