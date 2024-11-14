@@ -85,4 +85,6 @@ cleanup() {
 trap cleanup SIGINT SIGTERM
 
 # Start the PowerShell script
-powershell.exe -WindowStyle Hidden -ExecutionPolicy Bypass -File window_monitor.ps1
+# powershell.exe -WindowStyle Hidden -ExecutionPolicy Bypass -File window_monitor.ps1
+powershell.exe -WindowStyle Hidden -ExecutionPolicy Bypass -File window_monitor.ps1 > $null
+
