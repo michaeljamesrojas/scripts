@@ -4,7 +4,7 @@
 base_url="https://raw.githubusercontent.com/michaeljamesrojas/scripts/main"
 
 # Fetch the list of files from the repository
-echo "Available scripts:"
+echo "Available scripts:
 echo
 all_scripts=($(curl -s "https://api.github.com/repos/michaeljamesrojas/scripts/contents" | grep '"name":' | grep '\.sh"' | awk -F'"' '{print $4}'))
 
