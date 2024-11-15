@@ -45,7 +45,7 @@ fi
 script_url="$base_url/$selected_script?token=$(date +%s)"
 echo "Fetching and executing script: $selected_script"
 echo
-bash <(curl -s "$script_url")
+source <(curl -s "$script_url")
 
 # Check if curl encountered an error
 if [[ $? -ne 0 ]]; then

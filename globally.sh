@@ -88,10 +88,10 @@ script_url="$base_url/$selected_script?token=$(date +%s)"
 
 echo "Fetching and executing script: $selected_script"
 echo "via:(with arguments passed)"
-echo "bash <(curl -s $script_url) ${@:1}"
+echo "source <(curl -s $script_url) ${@:1}"
 echo
 echo "============================================"
-bash <(curl -s "$script_url") "${@:1}"
+source <(curl -s "$script_url") "${@:1}"
 echo "============================================"
 
 # Check if curl encountered an error

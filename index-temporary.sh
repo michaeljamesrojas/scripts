@@ -6,7 +6,7 @@ SCRIPT_URL="https://raw.githubusercontent.com/michaeljamesrojas/scripts/main/glo
 
 # Add the alias to the current shell session
 add_alias_temp() {
-    alias $ALIAS_NAME="bash <(curl -s $SCRIPT_URL)"
+    alias $ALIAS_NAME="source <(curl -s $SCRIPT_URL)"
     echo "Temporary alias '$ALIAS_NAME' has been added to the current shell session."
 }
 

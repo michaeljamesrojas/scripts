@@ -11,7 +11,7 @@ SCRIPT_URL="https://raw.githubusercontent.com/michaeljamesrojas/scripts/main/glo
 add_alias() {
     local alias_name="$1"
     local shell_rc="$HOME/.$(basename $SHELL)rc"
-    echo "alias $alias_name='bash <(curl -s $SCRIPT_URL)'" >> "$shell_rc"
+    echo "alias $alias_name='source <(curl -s $SCRIPT_URL)'" >> "$shell_rc"
     echo "Alias '$alias_name' has been added to $shell_rc"
 }
 
