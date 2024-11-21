@@ -9,6 +9,9 @@ response=$(curl -s -X POST \
 if [ $? -eq 0 ]; then
     echo "Retrieved text from global clipboard:"
     echo "$response"
+    echo "$response" | clip
+    echo
+    echo "Above is copied to your clipboard
 else
     echo "Failed to retrieve text from global clipboard"
     exit 1
