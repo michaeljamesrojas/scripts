@@ -1,24 +1,19 @@
 #!/bin/bash
 
-# Check if an argument is provided
-if [ -z "$1" ]; then
-    echo "Usage: $0 <text_to_share>"
-    exit 1
-fi
-
-# The text to share is the first argument
-text_to_share="$1"
+# Get text from clipboard using powershell in Windows
+clipboard_text=$(powershell.exe -command "Get-Clipboard")
 
 # Make the POST request using curl
 response=$(curl -s -X POST \
-    -d "input=$text_to_share" \
+    -d "input=$clipboard_text" \
     -d "input2=333888" \
     "https://www.magictool.ai/functions/TEXT-SHARING-SAVE.php")
 
 # Check if the request was successful
 if [ $? -eq 0 ]; then
-    echo "Text successfully shared globally!"
+    echo "Clipboard text successfully shared globally!"
+    echo "Content: $clipboard_text"
 else
-    echo "Failed to share text globally"
+    echo "Failed to share clipboard text globally"
     exit 1
 fi
