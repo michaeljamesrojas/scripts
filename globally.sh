@@ -84,7 +84,8 @@ if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
 fi
 
 # Execute the chosen script directly from the raw URL
-script_url="$base_url/$selected_script?token=$(date +%s)"
+# script_url="$base_url/$selected_script?token=$(date +%s)"
+script_url="$base_url/$selected_script"
 
 echo "Fetching and executing script: $selected_script"
 echo "via:(with arguments passed)"
