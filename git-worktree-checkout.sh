@@ -17,8 +17,4 @@ if ! git rev-parse --quiet --verify "$COMMIT_SHA" >/dev/null; then
     exit 1
 fi
 
-git worktree add -b "$BRANCH_NAME" "$WORKTREE_PATH" HEAD
-cd "$WORKTREE_PATH"
-git reset --hard "$COMMIT_SHA"
-git reset --soft HEAD~1
-git reset --soft HEAD~1
+git worktree add -b "$BRANCH_NAME" "$WORKTREE_PATH" HEAD && cd "$WORKTREE_PATH" && git reset --hard "$COMMIT_SHA" && git reset --soft HEAD~1 && git reset --soft HEAD~1
