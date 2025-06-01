@@ -76,6 +76,25 @@ fi
 
 echo -e "${GREEN}Content retrieved from clipboard.${NC}"
 
+# Show the clipboard contents to the user for confirmation
+echo -e "${YELLOW}Preview of clipboard contents:${NC}"
+echo "----------------------------------------"
+echo "$FILE_CONTENT" | head -n 10
+
+# If the content is longer than 10 lines, indicate there's more
+LINE_COUNT=$(echo "$FILE_CONTENT" | wc -l)
+if [ $LINE_COUNT -gt 10 ]; then
+    echo -e "${YELLOW}... (showing first 10 lines of $LINE_COUNT total lines)${NC}"
+fi
+echo "----------------------------------------"
+
+# Ask for confirmation
+read -p "Is this the correct content for your file? (y/n): " CONFIRM
+if [[ ! "$CONFIRM" =~ ^[Yy]$ ]]; then
+    echo -e "${RED}Operation cancelled. Please update your clipboard with the correct content and try again.${NC}"
+    exit 1
+fi
+
 # Clean up any existing clone in temp directory
 if [ -d "$CLONE_DIR" ]; then
     echo -e "${YELLOW}Removing existing clone in temp directory...${NC}"
