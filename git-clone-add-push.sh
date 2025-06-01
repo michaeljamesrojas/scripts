@@ -65,12 +65,21 @@ if [[ ! "$FILE_NAME" == *.sh ]]; then
     echo -e "${YELLOW}Added .sh extension to filename: ${FILE_NAME}${NC}"
 fi
 
+# Ask user to confirm clipboard content is ready
+echo -e "${YELLOW}Please make sure you have copied the desired file content to your clipboard.${NC}"
+read -p "Is your clipboard ready with the content for $FILE_NAME? (y/n): " CLIPBOARD_READY
+
+if [[ ! "$CLIPBOARD_READY" =~ ^[Yy]$ ]]; then
+    echo -e "${YELLOW}Please prepare your clipboard and run the script again.${NC}"
+    exit 0
+fi
+
 # Get content from clipboard
 echo -e "${YELLOW}Getting content from clipboard...${NC}"
 FILE_CONTENT=$(get_clipboard_content)
 
 if [ -z "$FILE_CONTENT" ]; then
-    echo -e "${RED}Error: Clipboard is empty. Please copy content to clipboard first.${NC}"
+    echo -e "${RED}Error: Clipboard is empty. Please copy content to clipboard first and run the script again.${NC}"
     exit 1
 fi
 
@@ -88,7 +97,7 @@ if [ $LINE_COUNT -gt 10 ]; then
 fi
 echo "----------------------------------------"
 
-# Ask for confirmation
+# Ask for confirmation of the content
 read -p "Is this the correct content for your file? (y/n): " CONFIRM
 if [[ ! "$CONFIRM" =~ ^[Yy]$ ]]; then
     echo -e "${RED}Operation cancelled. Please update your clipboard with the correct content and try again.${NC}"
