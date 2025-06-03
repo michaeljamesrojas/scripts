@@ -3,7 +3,7 @@
 # Define the alias names and the URLs of the scripts
 ALIAS_NAME1="ggg"
 ALIAS_NAME2="globally"
-ALIAS_NAME3="gggg"
+ALIAS_NAME3="gg"
 
 # SCRIPT_URL="https://raw.githubusercontent.com/michaeljamesrojas/scripts/main/globally.sh?token=$(date +%s)"
 SCRIPT_URL="https://raw.githubusercontent.com/michaeljamesrojas/scripts/main/globally.sh"
