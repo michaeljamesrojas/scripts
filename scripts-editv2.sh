@@ -51,12 +51,16 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# Open the cloned repository in Windows Explorer
-echo -e "${BLUE}Opening repository in Windows Explorer...${NC}"
-explorer.exe "$(cygpath -w "$CLONE_DIR")"
-if [ $? -ne 0 ]; then
-    echo -e "${YELLOW}Warning: Failed to open Windows Explorer. The repository is still available at: ${CLONE_DIR}${NC}"
-fi
+# # Open the cloned repository in Windows Explorer
+# echo -e "${BLUE}Opening repository in Windows Explorer...${NC}"
+# explorer.exe "$(cygpath -w "$CLONE_DIR")"
+# if [ $? -ne 0 ]; then
+#     echo -e "${YELLOW}Warning: Failed to open Windows Explorer. The repository is still available at: ${CLONE_DIR}${NC}"
+# fi
+
+echo -e "${BLUE}Opening repository in Windsurf...${NC}"
+windsurf "$CLONE_DIR"
+
 
 # Display development instructions
 echo -e "${GREEN}Repository cloned successfully to: ${CLONE_DIR}${NC}"
