@@ -93,9 +93,9 @@ script_url="$base_url/$selected_script"
 echo "Fetching and executing script: $selected_script"
 echo "via:(with arguments passed)"
 echo "source <(curl -s $script_url) ${@:1}"
-echo
-echo "Or RUN IT YOURSELF (above is copied to your clipboard)"
-echo "source <(curl -s $script_url) ${@:1}" | clip
+# echo
+# echo "Or RUN IT YOURSELF (above is copied to your clipboard)"
+# echo "source <(curl -s $script_url) ${@:1}" | clip
 echo
 echo "============================================"
 source <(curl -s "$script_url") "${@:1}"
