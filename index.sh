@@ -4,6 +4,7 @@
 ALIAS_NAME1="ggg"
 ALIAS_NAME2="globally"
 ALIAS_NAME3="gg"
+ALIAS_NAME4="x" # x as exit
 
 # SCRIPT_URL="https://raw.githubusercontent.com/michaeljamesrojas/scripts/main/globally.sh?token=$(date +%s)"
 SCRIPT_URL="https://raw.githubusercontent.com/michaeljamesrojas/scripts/main/globally.sh"
@@ -22,4 +23,5 @@ add_alias() {
 add_alias "$ALIAS_NAME1" "$SCRIPT_URL"
 add_alias "$ALIAS_NAME2" "$SCRIPT_URL"
 add_alias "$ALIAS_NAME3" "$AUTO_SCRIPT_URL"
+alias "$ALIAS_NAME4" "exit"
 echo "Please restart your terminal or run 'source $HOME/.$(basename $SHELL)rc' to use the new aliases."
