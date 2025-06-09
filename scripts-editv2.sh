@@ -70,7 +70,7 @@ echo -e "${YELLOW}The temporary clone will be removed when you confirm you're do
 
 # Wait for user confirmation before cleanup
 while true; do
-    read -p "Are you done developing? (yes/no): " DONE
+    read -p "(I'll clean up) Are you done developing? (yes/no): " DONE
     case $DONE in
         [Yy]* | [Yy][Ee][Ss])
             break
