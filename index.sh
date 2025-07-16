@@ -24,15 +24,23 @@ add_alias() {
 # Add the ggf alias as a one-liner that doesn't require fetching from GitHub
 add_ggf_alias() {
     local shell_rc="$HOME/.$(basename $SHELL)rc"
+    
+    # First add the function that will be used by the alias
     cat >> "$shell_rc" << 'EOF'
-alias ggf='if [ -f "$TEMP/scripts-cache/scripts/globally-auto-fast.sh" ]; then
-  echo "Using local script from $TEMP/scripts-cache/scripts/globally-auto-fast.sh";
-  source "$TEMP/scripts-cache/scripts/globally-auto-fast.sh" "$@";
-else
-  echo "Fetching script from GitHub...";
-  source <(curl -s https://raw.githubusercontent.com/michaeljamesrojas/scripts/main/globally-auto-fast.sh) "$@";
-fi'
+# Function to run globally-auto-fast script with local cache check
+function run_ggf() {
+    if [ -f "$TEMP/scripts-cache/scripts/globally-auto-fast.sh" ]; then
+        echo "Using local script from $TEMP/scripts-cache/scripts/globally-auto-fast.sh"
+        source "$TEMP/scripts-cache/scripts/globally-auto-fast.sh" "$@"
+    else
+        echo "Fetching script from GitHub..."
+        source <(curl -s https://raw.githubusercontent.com/michaeljamesrojas/scripts/main/globally-auto-fast.sh) "$@"
+    fi
+}
 EOF
+
+    # Then add the alias that calls the function
+    echo "alias $ALIAS_NAME5='run_ggf'" >> "$shell_rc"
     echo "Alias '$ALIAS_NAME5' has been added to $shell_rc"
 }
 
