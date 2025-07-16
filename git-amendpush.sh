@@ -1,0 +1,1 @@
+ gg amend && gg pushf
