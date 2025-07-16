@@ -24,7 +24,80 @@ add_alias() {
 # Add the ggf alias as a one-liner that doesn't require fetching from GitHub
 add_ggf_alias() {
     local shell_rc="$HOME/.$(basename $SHELL)rc"
-    echo "alias $ALIAS_NAME5='REPO_URL=\"https://github.com/michaeljamesrojas/scripts.git\"; REPO_NAME=\"scripts\"; TEMP_DIR=$(powershell.exe -command \"echo \\$env:TEMP\" | tr -d \"\\r\"); CACHE_DIR=\"$TEMP_DIR/scripts-cache\"; REPO_DIR=\"$CACHE_DIR/$REPO_NAME\"; if [ ! -d \"$REPO_DIR\" ]; then mkdir -p \"$CACHE_DIR\" && git clone \"$REPO_URL\" \"$REPO_DIR\" > /dev/null 2>&1 || echo \"Error: Failed to clone repository.\"; fi; cd \"$REPO_DIR\" && bash -c \"all_scripts=($(find . -maxdepth 1 -name \\\"*.sh\\\" -type f -exec basename {} \\\\;)); if [ \\\"$1\\\" != \\\"\\\" ]; then scripts=(); for script in \\\"${all_scripts[@]}\\\"; do if [[ \\\"$script\\\" == *\\\"$1\\\"* ]]; then scripts+=(\\\"$script\\\"); fi; done; shift; else scripts=(\\\"${all_scripts[@]}\\\"); fi; if [ ${#scripts[@]} -eq 0 ]; then echo \\\"No scripts found matching the filter.\\\"; exit 1; fi; if [ ${#scripts[@]} -eq 1 ]; then selected_script=\\\"${scripts[0]}\\\"; echo \\\"Only one script found: $selected_script. Executing automatically...\\\"; else for i in \\\"${!scripts[@]}\\\"; do echo \\\"$((i+1)). ${scripts[$i]}\\\"; done; read -p \\\"Enter the number of the script you want to execute: \\\" choice; if [[ ! \\\"$choice\\\" =~ ^[0-9]+$ ]] || [ \\\"$choice\\\" -lt 1 ] || [ \\\"$choice\\\" -gt \\\"${#scripts[@]}\\\" ]; then echo \\\"Invalid choice.\\\"; exit 1; fi; selected_script=\\\"${scripts[$((choice-1))]}\\\"; read -p \\\"Do you really want to execute $selected_script? (y/n): \\\" confirm; if [[ ! \\\"$confirm\\\" =~ ^[Yy]$ ]]; then echo \\\"Execution cancelled.\\\"; exit 0; fi; fi; script_path=\\\"$REPO_DIR/$selected_script\\\"; echo \\\"Executing script: $selected_script\\\"; source \\\"$script_path\\\" \\\"$@\\\"\"'" >> "$shell_rc"
+    cat >> "$shell_rc" << 'EOF'
+alias ggf='(
+  REPO_URL="https://github.com/michaeljamesrojas/scripts.git"
+  REPO_NAME="scripts"
+  TEMP_DIR=$(powershell.exe -command "echo \$env:TEMP" | tr -d "\r")
+  CACHE_DIR="$TEMP_DIR/scripts-cache"
+  REPO_DIR="$CACHE_DIR/$REPO_NAME"
+  
+  # Check if repo exists, clone if not
+  if [ ! -d "$REPO_DIR" ]; then
+    echo "Creating cache directory and cloning repository..."
+    mkdir -p "$CACHE_DIR" && \
+    git clone "$REPO_URL" "$REPO_DIR" > /dev/null 2>&1 || { echo "Error: Failed to clone repository."; exit 1; }
+  fi
+  
+  # Change to repo directory
+  cd "$REPO_DIR" || { echo "Error: Cannot access repository directory."; exit 1; }
+  
+  # Get all shell scripts
+  all_scripts=($(find . -maxdepth 1 -name "*.sh" -type f -exec basename {} \;))
+  
+  # Filter scripts if argument provided
+  if [ -n "$1" ]; then
+    scripts=()
+    for script in "${all_scripts[@]}"; do
+      if [[ "$script" == *"$1"* ]]; then
+        scripts+=("$script")
+      fi
+    done
+    shift
+  else
+    scripts=("${all_scripts[@]}")
+  fi
+  
+  # Check if any scripts found
+  if [ ${#scripts[@]} -eq 0 ]; then
+    echo "No scripts found matching the filter."
+    exit 1
+  fi
+  
+  # If only one script, execute it automatically
+  if [ ${#scripts[@]} -eq 1 ]; then
+    selected_script="${scripts[0]}"
+    echo "Only one script found: $selected_script. Executing automatically..."
+  else
+    # Display numbered list
+    for i in "${!scripts[@]}"; do
+      echo "$((i+1)). ${scripts[$i]}"
+    done
+    
+    # Prompt for selection
+    read -p "Enter the number of the script you want to execute: " choice
+    if [[ ! "$choice" =~ ^[0-9]+$ ]] || [ "$choice" -lt 1 ] || [ "$choice" -gt "${#scripts[@]}" ]; then
+      echo "Invalid choice."
+      exit 1
+    fi
+    
+    # Get selected script
+    selected_script="${scripts[$((choice-1))]}"
+    
+    # Confirm execution
+    read -p "Do you really want to execute $selected_script? (y/n): " confirm
+    if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
+      echo "Execution cancelled."
+      exit 0
+    fi
+  fi
+  
+  # Execute the script
+  script_path="$REPO_DIR/$selected_script"
+  echo "Executing script: $selected_script"
+  source "$script_path" "$@"
+)'
+EOF
     echo "One-liner alias '$ALIAS_NAME5' has been added to $shell_rc"
 }
 
