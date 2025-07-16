@@ -24,7 +24,13 @@ add_alias() {
 # Add the ggf alias as a one-liner that doesn't require fetching from GitHub
 add_ggf_alias() {
     local shell_rc="$HOME/.$(basename $SHELL)rc"
-    echo "alias $ALIAS_NAME5='source <(curl -s $FAST_SCRIPT_URL)'" >> "$shell_rc"
+    cat >> "$shell_rc" << 'EOF'
+alias ggf='if [ -f "$TEMP/scripts/globally-auto-fast.sh" ]; then
+  source "$TEMP/scripts/globally-auto-fast.sh" "$@";
+else
+  source <(curl -s https://raw.githubusercontent.com/michaeljamesrojas/scripts/main/globally-auto-fast.sh) "$@";
+fi'
+EOF
     echo "Alias '$ALIAS_NAME5' has been added to $shell_rc"
 }
 
