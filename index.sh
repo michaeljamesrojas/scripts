@@ -25,9 +25,11 @@ add_alias() {
 add_ggf_alias() {
     local shell_rc="$HOME/.$(basename $SHELL)rc"
     cat >> "$shell_rc" << 'EOF'
-alias ggf='if [ -f "$TEMP/scripts/globally-auto-fast.sh" ]; then
-  source "$TEMP/scripts/globally-auto-fast.sh" "$@";
+alias ggf='if [ -f "$TEMP/scripts-cache/scripts/globally-auto-fast.sh" ]; then
+  echo "Using local script from $TEMP/scripts-cache/scripts/globally-auto-fast.sh";
+  source "$TEMP/scripts-cache/scripts/globally-auto-fast.sh" "$@";
 else
+  echo "Fetching script from GitHub...";
   source <(curl -s https://raw.githubusercontent.com/michaeljamesrojas/scripts/main/globally-auto-fast.sh) "$@";
 fi'
 EOF
