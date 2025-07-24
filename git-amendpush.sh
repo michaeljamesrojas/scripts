@@ -1,1 +1,1 @@
- gg amend && gg pushf
+ gg amendNo && gg pushf
