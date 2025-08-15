@@ -225,32 +225,8 @@ async function createGmailAccountPartial(desiredEmail, password) {
         
         // Wait for user to complete manually (or Ctrl+C)
         while (true) {
-            await sleep(30000); // Check every 30 seconds
-            const currentUrl = page.url();
-            
-            // Check if user completed successfully
-            if (currentUrl.includes('myaccount.google.com') || 
-                currentUrl.includes('mail.google.com') ||
-                currentUrl.includes('welcome') ||
-                currentUrl.includes('ManageAccount')) {
-                
-                console.log('???? SUCCESS: Detected successful completion!');
-                console.log(`???? Your Gmail: ${desiredEmail}@gmail.com`);
-                console.log(`???? Your Password: ${password}`);
-                console.log('??? Account creation completed successfully!');
-                
-                // Give user time to see the success message
-                await sleep(10000);
-                
-                return { 
-                    success: true, 
-                    email: `${desiredEmail}@gmail.com`, 
-                    password: password,
-                    finalUrl: currentUrl
-                };
-            }
+            await sleep(120000); // Check every 2 minutes
         }
-        
     } catch (error) {
         if (error.message.includes('Target closed')) {
             console.log('Browser was closed by user - cleanup will proceed');
