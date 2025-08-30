@@ -70,6 +70,18 @@ cd "$CLONE_DIR" && windsurf .
 
 if [ $? -eq 0 ]; then
     echo -e "${GREEN}Success! Repository opened in Windsurf.${NC}"
+    
+    # Ask if user wants to clean up the cloned directory
+    echo -e "${YELLOW}Do you want to clean up the cloned directory from temp? (y/n):${NC}"
+    read -p "Clean up? " CLEANUP
+    
+    if [[ "$CLEANUP" =~ ^[Yy]$ ]]; then
+        echo -e "${YELLOW}Cleaning up cloned directory...${NC}"
+        rm -rf "$CLONE_DIR"
+        echo -e "${GREEN}Cleanup complete.${NC}"
+    else
+        echo -e "${YELLOW}Directory preserved at: $CLONE_DIR${NC}"
+    fi
 else
     echo -e "${RED}Error: Failed to open repository in Windsurf.${NC}"
     exit 1
