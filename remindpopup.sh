@@ -29,9 +29,10 @@ fi
 # Calculate total seconds
 total_seconds=$(( (minutes * 60) + seconds ))
 
-# Generate unique filename to avoid conflicts
+# Generate unique filename to avoid conflicts in temp folder
 timestamp=$(date +%Y%m%d_%H%M%S)
-ps_file="reminder_${timestamp}.ps1"
+temp_folder="/c/Users/$(whoami)/AppData/Local/Temp"
+ps_file="$temp_folder/reminder_${timestamp}.ps1"
 
 echo "Creating reminder for: '$reminder_text'"
 echo "Time: ${minutes}m ${seconds}s"
@@ -43,6 +44,8 @@ escaped_text=$(echo "$reminder_text" | sed 's/"/\\"/g' | sed "s/'/\\'/g")
 # Create the PowerShell script
 cat > "$ps_file" << EOL
 # Auto-generated reminder script
+\$scriptPath = \$MyInvocation.MyCommand.Path
+
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 
@@ -95,42 +98,30 @@ function Show-ReminderWindow {
 }
 
 # Main execution
-Write-Host "⏰ Reminder set for $total_seconds seconds..."
-Write-Host "Press Ctrl+C to cancel..."
+try {
+    # Wait for the specified time
+    Start-Sleep -Seconds $total_seconds
 
-# Wait for the specified time
-Start-Sleep -Seconds $total_seconds
-
-Write-Host "⏰ TIME'S UP! Showing reminder..."
-
-# Show the reminder window
-Show-ReminderWindow
-
-Write-Host "Reminder acknowledged."
-EOL
-
-# Cleanup function
-cleanup() {
-    # Kill any PowerShell processes for this specific script
-    taskkill //F //IM powershell.exe //FI "WINDOWTITLE eq $ps_file" > /dev/null 2>&1
-    rm -f "$ps_file"
-    exit 0
+    # Show the reminder window
+    Show-ReminderWindow
 }
-
-# Set up cleanup on script termination
-trap cleanup SIGINT SIGTERM
+finally {
+    # Clean up this script file
+    if (Test-Path \$scriptPath) {
+        Remove-Item \$scriptPath -Force -ErrorAction SilentlyContinue
+    }
+}
+EOL
 
 echo "Generated PowerShell file: $ps_file"
 echo "Starting reminder timer..."
 echo "The reminder window will appear in ${minutes}m ${seconds}s"
 echo ""
 
-echo "Running PowerShell reminder script..."
-echo "Press Ctrl+C to cancel the reminder before it triggers"
-echo ""
+echo "Launching detached PowerShell reminder..."
 
-# Run PowerShell script and wait for it to complete
-powershell.exe -ExecutionPolicy Bypass -File "$ps_file"
+# Launch PowerShell script hidden in background and exit immediately
+powershell.exe -WindowStyle Hidden -ExecutionPolicy Bypass -File "$ps_file" &
 
-echo "Reminder finished. Cleaning up..."
-cleanup
+echo "Reminder started! You can close this terminal."
+echo "The reminder popup will appear automatically after the timer expires."
