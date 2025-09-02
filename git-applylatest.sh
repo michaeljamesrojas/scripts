@@ -1,1 +1,1 @@
-git stash apply
+git stash apply --index
