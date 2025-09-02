@@ -35,17 +35,21 @@ ahk_file="reminder_${timestamp}.ahk"
 
 echo "Creating reminder for: '$reminder_text'"
 echo "Time: ${minutes}m ${seconds}s"
+echo "Total milliseconds: $total_ms"
 
-# Create the AutoHotkey script
-cat > "$ahk_file" << 'EOL'
+# Escape special characters in reminder text for AHK
+escaped_text=$(echo "$reminder_text" | sed 's/"/`"/g' | sed "s/'/\`'/g")
+
+# Create the AutoHotkey script directly with variables
+cat > "$ahk_file" << EOL
 ; Auto-generated reminder script
 #NoEnv
 #SingleInstance Force
 #Persistent
 
 ; Set reminder details
-ReminderText := "REMINDER_TEXT_PLACEHOLDER"
-TimerMs := TIMER_MS_PLACEHOLDER
+ReminderText := "$escaped_text"
+TimerMs := $total_ms
 
 ; Start the timer
 SetTimer, ShowReminder, %TimerMs%
@@ -77,10 +81,6 @@ GuiClose:
     ExitApp
 EOL
 
-# Replace placeholders in the AHK script
-sed -i "s/REMINDER_TEXT_PLACEHOLDER/$reminder_text/g" "$ahk_file"
-sed -i "s/TIMER_MS_PLACEHOLDER/$total_ms/g" "$ahk_file"
-
 # Cleanup function
 cleanup() {
     # Kill any AutoHotkey processes for this specific script
@@ -95,20 +95,35 @@ trap cleanup SIGINT SIGTERM
 echo "Starting reminder timer..."
 echo "Press Ctrl+C to cancel the reminder"
 
-# Check if AutoHotkey is available
-if ! command -v autohotkey > /dev/null 2>&1; then
-    echo "Warning: AutoHotkey not found in PATH. Trying to run AHK file directly..."
-    if [ -f "/c/Program Files/AutoHotkey/AutoHotkey.exe" ]; then
-        "/c/Program Files/AutoHotkey/AutoHotkey.exe" "$ahk_file"
-    elif [ -f "/c/Program Files (x86)/AutoHotkey/AutoHotkey.exe" ]; then
-        "/c/Program Files (x86)/AutoHotkey/AutoHotkey.exe" "$ahk_file"
-    else
-        echo "Error: AutoHotkey not found. Please install AutoHotkey or add it to your PATH."
-        cleanup
-    fi
+echo "Generated AHK file: $ahk_file"
+echo "Starting reminder timer..."
+echo "The reminder window will appear in ${minutes}m ${seconds}s"
+echo ""
+
+# Find and run AutoHotkey
+ahk_path=""
+if command -v autohotkey > /dev/null 2>&1; then
+    ahk_path="autohotkey"
+elif [ -f "/c/Program Files/AutoHotkey/v2/AutoHotkey.exe" ]; then
+    ahk_path="/c/Program Files/AutoHotkey/v2/AutoHotkey.exe"
+elif [ -f "/c/Program Files/AutoHotkey/AutoHotkey.exe" ]; then
+    ahk_path="/c/Program Files/AutoHotkey/AutoHotkey.exe"
+elif [ -f "/c/Program Files (x86)/AutoHotkey/AutoHotkey.exe" ]; then
+    ahk_path="/c/Program Files (x86)/AutoHotkey/AutoHotkey.exe"
 else
-    autohotkey "$ahk_file"
+    echo "Error: AutoHotkey not found. Please install AutoHotkey."
+    echo "You can download it from: https://www.autohotkey.com/"
+    echo "Generated AHK file is saved as: $ahk_file"
+    echo "You can run it manually once AutoHotkey is installed."
+    exit 1
 fi
 
-# Clean up after AHK script exits
+echo "Running: $ahk_path $ahk_file"
+echo "Press Ctrl+C to cancel the reminder before it triggers"
+echo ""
+
+# Run AutoHotkey and wait for it to complete
+"$ahk_path" "$ahk_file"
+
+echo "Reminder finished. Cleaning up..."
 cleanup
