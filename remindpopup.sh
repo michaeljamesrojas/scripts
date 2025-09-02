@@ -26,104 +26,111 @@ if [ "$minutes" -eq 0 ] && [ "$seconds" -eq 0 ]; then
     exit 1
 fi
 
-# Calculate total milliseconds for AHK timer
-total_ms=$(( (minutes * 60 + seconds) * 1000 ))
+# Calculate total seconds
+total_seconds=$(( (minutes * 60) + seconds ))
 
 # Generate unique filename to avoid conflicts
 timestamp=$(date +%Y%m%d_%H%M%S)
-ahk_file="reminder_${timestamp}.ahk"
+ps_file="reminder_${timestamp}.ps1"
 
 echo "Creating reminder for: '$reminder_text'"
 echo "Time: ${minutes}m ${seconds}s"
-echo "Total milliseconds: $total_ms"
+echo "Total seconds: $total_seconds"
 
-# Escape special characters in reminder text for AHK
-escaped_text=$(echo "$reminder_text" | sed 's/"/`"/g' | sed "s/'/\`'/g")
+# Escape special characters in reminder text for PowerShell
+escaped_text=$(echo "$reminder_text" | sed 's/"/\\"/g' | sed "s/'/\\'/g")
 
-# Create the AutoHotkey script directly with variables
-cat > "$ahk_file" << EOL
-; Auto-generated reminder script
-#NoEnv
-#SingleInstance Force
-#Persistent
+# Create the PowerShell script
+cat > "$ps_file" << EOL
+# Auto-generated reminder script
+Add-Type -AssemblyName System.Windows.Forms
+Add-Type -AssemblyName System.Drawing
 
-; Set reminder details
-ReminderText := "$escaped_text"
-TimerMs := $total_ms
-
-; Start the timer
-SetTimer, ShowReminder, %TimerMs%
-
-; Keep script running
-return
-
-ShowReminder:
-    ; Disable the timer so it only runs once
-    SetTimer, ShowReminder, Off
+# Function to create and show reminder window
+function Show-ReminderWindow {
+    # Create the form
+    \$form = New-Object System.Windows.Forms.Form
+    \$form.Text = "⏰ REMINDER"
+    \$form.Size = New-Object System.Drawing.Size(450, 200)
+    \$form.StartPosition = "CenterScreen"
+    \$form.TopMost = \$true
+    \$form.FormBorderStyle = "FixedDialog"
+    \$form.MaximizeBox = \$false
+    \$form.MinimizeBox = \$false
+    \$form.BackColor = [System.Drawing.Color]::LightYellow
     
-    ; Create persistent reminder window
-    Gui, Add, Text, x20 y20 w400 h100 Center VCenter, %ReminderText%
-    Gui, Add, Button, x170 y140 w80 h30 gCloseReminder, OK
-    Gui, Show, w440 h190, Reminder
+    # Create reminder text label
+    \$label = New-Object System.Windows.Forms.Label
+    \$label.Location = New-Object System.Drawing.Point(20, 30)
+    \$label.Size = New-Object System.Drawing.Size(400, 80)
+    \$label.Text = "$escaped_text"
+    \$label.Font = New-Object System.Drawing.Font("Arial", 12, [System.Drawing.FontStyle]::Bold)
+    \$label.TextAlign = "MiddleCenter"
+    \$label.BackColor = [System.Drawing.Color]::Transparent
+    \$form.Controls.Add(\$label)
     
-    ; Make window always on top
-    WinSet, AlwaysOnTop, On, Reminder
+    # Create OK button
+    \$okButton = New-Object System.Windows.Forms.Button
+    \$okButton.Location = New-Object System.Drawing.Point(175, 120)
+    \$okButton.Size = New-Object System.Drawing.Size(100, 30)
+    \$okButton.Text = "OK"
+    \$okButton.Font = New-Object System.Drawing.Font("Arial", 10, [System.Drawing.FontStyle]::Bold)
+    \$okButton.BackColor = [System.Drawing.Color]::LightBlue
+    \$okButton.Add_Click({
+        \$form.Close()
+    })
+    \$form.Controls.Add(\$okButton)
+    \$form.AcceptButton = \$okButton
     
-    ; Play system sound
-    SoundBeep, 1000, 500
+    # Play system beep
+    [System.Console]::Beep(1000, 500)
     
-    return
+    # Show the form
+    \$form.Add_Shown({
+        \$form.Activate()
+        \$okButton.Focus()
+    })
+    
+    [void]\$form.ShowDialog()
+}
 
-CloseReminder:
-    ExitApp
+# Main execution
+Write-Host "⏰ Reminder set for $total_seconds seconds..."
+Write-Host "Press Ctrl+C to cancel..."
 
-GuiClose:
-    ExitApp
+# Wait for the specified time
+Start-Sleep -Seconds $total_seconds
+
+Write-Host "⏰ TIME'S UP! Showing reminder..."
+
+# Show the reminder window
+Show-ReminderWindow
+
+Write-Host "Reminder acknowledged."
 EOL
 
 # Cleanup function
 cleanup() {
-    # Kill any AutoHotkey processes for this specific script
-    taskkill //F //IM autohotkey.exe //FI "WINDOWTITLE eq $ahk_file" > /dev/null 2>&1
-    rm -f "$ahk_file"
+    # Kill any PowerShell processes for this specific script
+    taskkill //F //IM powershell.exe //FI "WINDOWTITLE eq $ps_file" > /dev/null 2>&1
+    rm -f "$ps_file"
     exit 0
 }
 
 # Set up cleanup on script termination
 trap cleanup SIGINT SIGTERM
 
-echo "Starting reminder timer..."
-echo "Press Ctrl+C to cancel the reminder"
-
-echo "Generated AHK file: $ahk_file"
+echo "Generated PowerShell file: $ps_file"
 echo "Starting reminder timer..."
 echo "The reminder window will appear in ${minutes}m ${seconds}s"
 echo ""
 
-# Find and run AutoHotkey
-ahk_path=""
-if command -v autohotkey > /dev/null 2>&1; then
-    ahk_path="autohotkey"
-elif [ -f "/c/Program Files/AutoHotkey/v2/AutoHotkey.exe" ]; then
-    ahk_path="/c/Program Files/AutoHotkey/v2/AutoHotkey.exe"
-elif [ -f "/c/Program Files/AutoHotkey/AutoHotkey.exe" ]; then
-    ahk_path="/c/Program Files/AutoHotkey/AutoHotkey.exe"
-elif [ -f "/c/Program Files (x86)/AutoHotkey/AutoHotkey.exe" ]; then
-    ahk_path="/c/Program Files (x86)/AutoHotkey/AutoHotkey.exe"
-else
-    echo "Error: AutoHotkey not found. Please install AutoHotkey."
-    echo "You can download it from: https://www.autohotkey.com/"
-    echo "Generated AHK file is saved as: $ahk_file"
-    echo "You can run it manually once AutoHotkey is installed."
-    exit 1
-fi
-
-echo "Running: $ahk_path $ahk_file"
+echo "Running PowerShell reminder script..."
 echo "Press Ctrl+C to cancel the reminder before it triggers"
 echo ""
 
-# Run AutoHotkey and wait for it to complete
-"$ahk_path" "$ahk_file"
+# Run PowerShell script and wait for it to complete
+powershell.exe -ExecutionPolicy Bypass -File "$ps_file"
 
 echo "Reminder finished. Cleaning up..."
 cleanup
