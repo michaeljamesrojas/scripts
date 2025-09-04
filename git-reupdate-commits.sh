@@ -1,1 +1,1 @@
-git clean -f -d && git reset --hard HEAD~30 && git pull
+git clean -f -d && git reset --hard HEAD~5 && git pull
