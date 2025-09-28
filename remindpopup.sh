@@ -81,6 +81,7 @@ escaped_text=$(echo "$reminder_text" | sed 's/"/\\"/g' | sed "s/'/\\'/g")
 cat > "$ps_file" << EOL
 # Auto-generated reminder script
 \$scriptPath = \$MyInvocation.MyCommand.Path
+\$shouldRepeat = \$false
 
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
@@ -110,16 +111,31 @@ function Show-ReminderWindow {
 
     # Create OK button
     \$okButton = New-Object System.Windows.Forms.Button
-    \$okButton.Location = New-Object System.Drawing.Point(175, 120)
-    \$okButton.Size = New-Object System.Drawing.Size(100, 30)
+    \$okButton.Location = New-Object System.Drawing.Point(120, 120)
+    \$okButton.Size = New-Object System.Drawing.Size(80, 30)
     \$okButton.Text = "OK"
     \$okButton.Font = New-Object System.Drawing.Font("Arial", 10, [System.Drawing.FontStyle]::Bold)
     \$okButton.BackColor = [System.Drawing.Color]::LightBlue
     \$okButton.Add_Click({
+        \$form.DialogResult = [System.Windows.Forms.DialogResult]::OK
         \$form.Close()
     })
     \$form.Controls.Add(\$okButton)
     \$form.AcceptButton = \$okButton
+
+    # Create Repeat button
+    \$repeatButton = New-Object System.Windows.Forms.Button
+    \$repeatButton.Location = New-Object System.Drawing.Point(210, 120)
+    \$repeatButton.Size = New-Object System.Drawing.Size(80, 30)
+    \$repeatButton.Text = "Repeat"
+    \$repeatButton.Font = New-Object System.Drawing.Font("Arial", 10, [System.Drawing.FontStyle]::Bold)
+    \$repeatButton.BackColor = [System.Drawing.Color]::LightGreen
+    \$repeatButton.Add_Click({
+        \$script:shouldRepeat = \$true
+        \$form.DialogResult = [System.Windows.Forms.DialogResult]::Retry
+        \$form.Close()
+    })
+    \$form.Controls.Add(\$repeatButton)
 
     # Play system beep
     [System.Console]::Beep(1000, 500)
@@ -130,16 +146,27 @@ function Show-ReminderWindow {
         \$okButton.Focus()
     })
 
-    [void]\$form.ShowDialog()
+    \$result = \$form.ShowDialog()
+    return \$result
 }
 
-# Main execution
+# Main execution loop
 try {
-    # Wait for the specified time
-    Start-Sleep -Seconds $total_seconds
+    do {
+        \$shouldRepeat = \$false
 
-    # Show the reminder window
-    Show-ReminderWindow
+        # Wait for the specified time
+        Start-Sleep -Seconds $total_seconds
+
+        # Show the reminder window and get the result
+        \$dialogResult = Show-ReminderWindow
+
+        # Check if user clicked Repeat
+        if (\$dialogResult -eq [System.Windows.Forms.DialogResult]::Retry -or \$shouldRepeat) {
+            \$shouldRepeat = \$true
+            Write-Host "Reminder will repeat in $total_seconds seconds..."
+        }
+    } while (\$shouldRepeat)
 }
 finally {
     # Clean up this script file
