@@ -1,24 +1,60 @@
 #!/bin/bash
 
-# Get reminder text from user
-echo "Enter reminder text:"
-read -r reminder_text
+# Function to prompt for missing parameters
+prompt_for_reminder_text() {
+    echo "Enter reminder text:"
+    read -r reminder_text
+}
 
-# Get minutes
-echo "Enter minutes (0 for no minutes):"
-read -r minutes
-while ! [[ "$minutes" =~ ^[0-9]+$ ]] || [ "$minutes" -lt 0 ]; do
-    echo "Please enter a valid number of minutes (0 or positive):"
+prompt_for_minutes() {
+    echo "Enter minutes (0 for no minutes):"
     read -r minutes
-done
+    while ! [[ "$minutes" =~ ^[0-9]+$ ]] || [ "$minutes" -lt 0 ]; do
+        echo "Please enter a valid number of minutes (0 or positive):"
+        read -r minutes
+    done
+}
 
-# Get seconds
-echo "Enter seconds (0 for no seconds):"
-read -r seconds
-while ! [[ "$seconds" =~ ^[0-9]+$ ]] || [ "$seconds" -lt 0 ] || [ "$seconds" -gt 59 ]; do
-    echo "Please enter a valid number of seconds (0-59):"
+prompt_for_seconds() {
+    echo "Enter seconds (0 for no seconds):"
     read -r seconds
-done
+    while ! [[ "$seconds" =~ ^[0-9]+$ ]] || [ "$seconds" -lt 0 ] || [ "$seconds" -gt 59 ]; do
+        echo "Please enter a valid number of seconds (0-59):"
+        read -r seconds
+    done
+}
+
+# Parse command line arguments
+reminder_text="$1"
+minutes="$2"
+seconds="$3"
+
+# Check if reminder text was provided
+if [ -z "$reminder_text" ]; then
+    prompt_for_reminder_text
+fi
+
+# Check if minutes was provided and validate
+if [ -z "$minutes" ]; then
+    prompt_for_minutes
+else
+    # Validate provided minutes
+    if ! [[ "$minutes" =~ ^[0-9]+$ ]] || [ "$minutes" -lt 0 ]; then
+        echo "Error: Invalid minutes parameter '$minutes'. Must be a non-negative integer."
+        prompt_for_minutes
+    fi
+fi
+
+# Check if seconds was provided and validate
+if [ -z "$seconds" ]; then
+    prompt_for_seconds
+else
+    # Validate provided seconds
+    if ! [[ "$seconds" =~ ^[0-9]+$ ]] || [ "$seconds" -lt 0 ] || [ "$seconds" -gt 59 ]; then
+        echo "Error: Invalid seconds parameter '$seconds'. Must be an integer between 0-59."
+        prompt_for_seconds
+    fi
+fi
 
 # Validate that at least some time is specified
 if [ "$minutes" -eq 0 ] && [ "$seconds" -eq 0 ]; then
@@ -61,7 +97,7 @@ function Show-ReminderWindow {
     \$form.MaximizeBox = \$false
     \$form.MinimizeBox = \$false
     \$form.BackColor = [System.Drawing.Color]::LightYellow
-    
+
     # Create reminder text label
     \$label = New-Object System.Windows.Forms.Label
     \$label.Location = New-Object System.Drawing.Point(20, 30)
@@ -71,7 +107,7 @@ function Show-ReminderWindow {
     \$label.TextAlign = "MiddleCenter"
     \$label.BackColor = [System.Drawing.Color]::Transparent
     \$form.Controls.Add(\$label)
-    
+
     # Create OK button
     \$okButton = New-Object System.Windows.Forms.Button
     \$okButton.Location = New-Object System.Drawing.Point(175, 120)
@@ -84,16 +120,16 @@ function Show-ReminderWindow {
     })
     \$form.Controls.Add(\$okButton)
     \$form.AcceptButton = \$okButton
-    
+
     # Play system beep
     [System.Console]::Beep(1000, 500)
-    
+
     # Show the form
     \$form.Add_Shown({
         \$form.Activate()
         \$okButton.Focus()
     })
-    
+
     [void]\$form.ShowDialog()
 }
 
