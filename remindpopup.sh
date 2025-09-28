@@ -91,7 +91,7 @@ function Show-ReminderWindow {
     # Create the form
     \$form = New-Object System.Windows.Forms.Form
     \$form.Text = "⏰ REMINDER"
-    \$form.Size = New-Object System.Drawing.Size(450, 200)
+    \$form.Size = New-Object System.Drawing.Size(500, 220)
     \$form.StartPosition = "CenterScreen"
     \$form.TopMost = \$true
     \$form.FormBorderStyle = "FixedDialog"
@@ -102,7 +102,7 @@ function Show-ReminderWindow {
     # Create reminder text label
     \$label = New-Object System.Windows.Forms.Label
     \$label.Location = New-Object System.Drawing.Point(20, 30)
-    \$label.Size = New-Object System.Drawing.Size(400, 80)
+    \$label.Size = New-Object System.Drawing.Size(450, 80)
     \$label.Text = "$escaped_text"
     \$label.Font = New-Object System.Drawing.Font("Arial", 12, [System.Drawing.FontStyle]::Bold)
     \$label.TextAlign = "MiddleCenter"
@@ -111,8 +111,8 @@ function Show-ReminderWindow {
 
     # Create OK button
     \$okButton = New-Object System.Windows.Forms.Button
-    \$okButton.Location = New-Object System.Drawing.Point(120, 120)
-    \$okButton.Size = New-Object System.Drawing.Size(80, 30)
+    \$okButton.Location = New-Object System.Drawing.Point(150, 130)
+    \$okButton.Size = New-Object System.Drawing.Size(80, 35)
     \$okButton.Text = "OK"
     \$okButton.Font = New-Object System.Drawing.Font("Arial", 10, [System.Drawing.FontStyle]::Bold)
     \$okButton.BackColor = [System.Drawing.Color]::LightBlue
@@ -125,8 +125,8 @@ function Show-ReminderWindow {
 
     # Create Repeat button
     \$repeatButton = New-Object System.Windows.Forms.Button
-    \$repeatButton.Location = New-Object System.Drawing.Point(210, 120)
-    \$repeatButton.Size = New-Object System.Drawing.Size(80, 30)
+    \$repeatButton.Location = New-Object System.Drawing.Point(250, 130)
+    \$repeatButton.Size = New-Object System.Drawing.Size(80, 35)
     \$repeatButton.Text = "Repeat"
     \$repeatButton.Font = New-Object System.Drawing.Font("Arial", 10, [System.Drawing.FontStyle]::Bold)
     \$repeatButton.BackColor = [System.Drawing.Color]::LightGreen
