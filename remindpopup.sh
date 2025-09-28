@@ -183,8 +183,9 @@ echo ""
 
 echo "Launching detached PowerShell reminder..."
 
-# Launch PowerShell script hidden in background and exit immediately
-powershell.exe -WindowStyle Hidden -ExecutionPolicy Bypass -File "$ps_file" &
+# Launch PowerShell script hidden in background and detach from terminal
+nohup powershell.exe -WindowStyle Hidden -ExecutionPolicy Bypass -File "$ps_file" > /dev/null 2>&1 &
+disown
 
 echo "Reminder started! You can close this terminal."
 echo "The reminder popup will appear automatically after the timer expires."
