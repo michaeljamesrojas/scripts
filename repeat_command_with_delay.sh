@@ -6,7 +6,8 @@ echo "=== Repeat Command with Delay ==="
 echo
 
 # Get the command to execute
-read -p "Enter the command to execute: " command
+# Use -r flag to prevent backslash interpretation
+read -r -p "Enter the command to execute: " command
 
 # Validate command is not empty
 if [ -z "$command" ]; then
