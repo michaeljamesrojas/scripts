@@ -3,6 +3,7 @@
 # Define the repository information
 REPO_URL="https://github.com/michaeljamesrojas/scripts.git"
 REPO_NAME="scripts"
+ORIGINAL_DIR="$PWD"
 
 # Colors for better readability
 GREEN='\033[0;32m'
@@ -189,6 +190,7 @@ echo -e "${BLUE}From local cache: $script_path${NC}"
 echo -e "${BLUE}With arguments: ${script_args[*]}${NC}"
 echo
 echo -e "${BLUE}============================================${NC}"
+cd "$ORIGINAL_DIR" || exit 1
 source "$script_path" "${script_args[@]}"
 echo -e "${BLUE}============================================${NC}"
 
