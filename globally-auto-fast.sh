@@ -23,17 +23,52 @@ if ! command_exists git; then
 fi
 
 # Get Windows temp directory
-TEMP_DIR=$(powershell.exe -command "echo \$env:TEMP" | tr -d '\r')
+# Try to get it from PowerShell (most reliable on Windows-bash environments like Git Bash)
+TEMP_DIR=$(powershell.exe -command "echo \$env:TEMP" 2>/dev/null | tr -d '\r')
+# Fallback to standard /tmp if powershell fails or returns empty
+if [ -z "$TEMP_DIR" ]; then
+    TEMP_DIR="/tmp"
+fi
+# Convert Windows backslashes to forward slashes just in case
+TEMP_DIR="${TEMP_DIR//\\//}"
 
 # Define cache directory
 CACHE_DIR="$TEMP_DIR/scripts-cache"
 REPO_DIR="$CACHE_DIR/$REPO_NAME"
 
-# Check if the repository exists in cache
-if [ -d "$REPO_DIR" ]; then
-    echo -e "${BLUE}Found cached repository. Using existing version...${NC}"
-    cd "$REPO_DIR"
+# Check for update flag
+UPDATE_CACHE=false
+ARGS=()
+for arg in "$@"; do
+    if [[ "$arg" == "-u" || "$arg" == "--update" ]]; then
+        UPDATE_CACHE=true
+    else
+        ARGS+=("$arg")
+    fi
+done
+
+# Check if the repository exists in cache and is valid
+if [ -d "$REPO_DIR/.git" ]; then
+    if [ "$UPDATE_CACHE" = true ]; then
+        echo -e "${BLUE}Updating cached repository...${NC}"
+        cd "$REPO_DIR" || exit 1
+        git pull --quiet
+        if [ $? -eq 0 ]; then
+             echo -e "${GREEN}Repository updated.${NC}"
+        else
+             echo -e "${RED}Failed to update repository. Using existing version.${NC}"
+        fi
+    else
+        echo -e "${BLUE}Found cached repository. Using existing version...${NC}"
+    fi
+    cd "$REPO_DIR" || exit 1
 else
+    # Safety: if directory exists but no .git, it might be corrupt. Remove it.
+    if [ -d "$REPO_DIR" ]; then
+        echo -e "${YELLOW}Cache directory exists but seems corrupt (no .git). Cleaning up...${NC}"
+        rm -rf "$REPO_DIR"
+    fi
+
     # Create cache directory if it doesn't exist
     if [ ! -d "$CACHE_DIR" ]; then
         echo -e "${BLUE}Creating cache directory...${NC}"
@@ -48,6 +83,7 @@ else
         exit 1
     else
         echo -e "${GREEN}Repository cloned successfully.${NC}"
+        cd "$REPO_DIR" || exit 1
     fi
 fi
 
@@ -55,21 +91,21 @@ fi
 echo -e "${BLUE}Available scripts:${NC}"
 echo
 
-# Change to repository directory
-cd "$REPO_DIR"
-
 # Get all shell scripts in the repository
-all_scripts=($(find . -maxdepth 1 -name "*.sh" -type f -exec basename {} \;))
+# Optimization: Use find | sed instead of find -exec basename to avoid forking process for each file (which is slow on Windows)
+all_scripts=($(find . -maxdepth 1 -name "*.sh" -type f | sed 's|^\./||'))
 
-# Filter scripts if first argument is provided
-if [ -n "$1" ]; then
+# Filter scripts if first argument is provided (restoring original args)
+FILTER="${ARGS[0]}"
+
+if [ -n "$FILTER" ]; then
     scripts=()
     for script in "${all_scripts[@]}"; do
-        if [[ $script == *"$1"* ]]; then
+        if [[ $script == *"$FILTER"* ]]; then
             scripts+=("$script")
         fi
     done
-    shift # Remove the first argument
+    # We don't shift here because we constructed specific ARGS array, but for passing to script we use the rest
 else
     scripts=("${all_scripts[@]}")
 fi
@@ -137,12 +173,23 @@ fi
 # Full path to the selected script
 script_path="$REPO_DIR/$selected_script"
 
+# Prepare arguments for the script
+# If we filtered, we remove the first arg (filter) from the passed args
+if [ -n "$FILTER" ]; then
+    # We need to construct script_args effectively.
+    # ARGS array currently holds [FILTER, arg2, arg3...]
+    # We want to pass arg2, arg3...
+    script_args=("${ARGS[@]:1}")
+else
+    script_args=("${ARGS[@]}")
+fi
+
 echo -e "${BLUE}Executing script: $selected_script${NC}"
 echo -e "${BLUE}From local cache: $script_path${NC}"
-echo -e "${BLUE}With arguments: ${@:1}${NC}"
+echo -e "${BLUE}With arguments: ${script_args[*]}${NC}"
 echo
 echo -e "${BLUE}============================================${NC}"
-source "$script_path" "${@:1}"
+source "$script_path" "${script_args[@]}"
 echo -e "${BLUE}============================================${NC}"
 
 # Check if script execution encountered an error
