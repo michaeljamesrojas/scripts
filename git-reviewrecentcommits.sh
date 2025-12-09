@@ -1,1 +1,1 @@
-gg resetsoft
+ggf resetsoft
